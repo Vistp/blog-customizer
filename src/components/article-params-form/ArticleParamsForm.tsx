@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
 
@@ -16,14 +16,10 @@ import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 
 interface ArticleParamsFormProps {
-	isOpen: boolean;
 	onApply: (state: typeof defaultArticleState) => void;
 }
 
-export const ArticleParamsForm = ({
-	isOpen: propIsOpen,
-	onApply,
-}: ArticleParamsFormProps) => {
+export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [selectedFont, setSelectedFont] = useState(
 		defaultArticleState.fontFamilyOption
@@ -41,7 +37,8 @@ export const ArticleParamsForm = ({
 		defaultArticleState.contentWidth
 	);
 
-	const isSidebarOpen = propIsOpen !== undefined ? propIsOpen : isOpen;
+	const rootRef = useRef<HTMLDivElement>(null);
+
 	const toggleSidebar = () => {
 		setIsOpen(!isOpen);
 	};
@@ -70,9 +67,24 @@ export const ArticleParamsForm = ({
 		setSelectedContentWidth(defaultArticleState.contentWidth);
 	};
 
+	useEffect(() => {
+		if (!isOpen) return;
+
+		const onClickOutside = (event: MouseEvent) => {
+			if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+				setIsOpen(false);
+			}
+		};
+
+		document.addEventListener('mousedown', onClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', onClickOutside);
+		};
+	}, [isOpen]);
+
 	return (
-		<>
-			<ArrowButton isOpen={isSidebarOpen} onClick={toggleSidebar} />
+		<div ref={rootRef}>
+			<ArrowButton isOpen={isOpen} onClick={toggleSidebar} />
 			<aside
 				className={`${styles.container} ${
 					isOpen ? styles.container_open : ''
@@ -116,6 +128,6 @@ export const ArticleParamsForm = ({
 					</div>
 				</form>
 			</aside>
-		</>
+		</div>
 	);
 };

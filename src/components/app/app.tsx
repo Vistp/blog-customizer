@@ -22,7 +22,7 @@ export const App = () => {
 					'--bg-color': articleState.backgroundColor.value,
 				} as CSSProperties
 			}>
-			<ArticleParamsForm isOpen={true} onApply={setArticleState} />
+			<ArticleParamsForm onApply={setArticleState} />
 			<Article />
 		</main>
 	);
