@@ -17,10 +17,12 @@ import { Separator } from 'src/ui/separator';
 
 interface ArticleParamsFormProps {
 	isOpen: boolean;
+	onApply: (state: typeof defaultArticleState) => void;
 }
 
 export const ArticleParamsForm = ({
 	isOpen: propIsOpen,
+	onApply,
 }: ArticleParamsFormProps) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [selectedFont, setSelectedFont] = useState(
@@ -44,6 +46,30 @@ export const ArticleParamsForm = ({
 		setIsOpen(!isOpen);
 	};
 
+	const onSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+
+		onApply({
+			fontFamilyOption: selectedFont,
+			fontSizeOption: selectedFontSize,
+			fontColor: selectedFontColor,
+			backgroundColor: selectedBackgroundColor,
+			contentWidth: selectedContentWidth,
+		});
+	};
+
+	const onReset = (e: React.FormEvent) => {
+		e.preventDefault();
+
+		onApply(defaultArticleState);
+
+		setSelectedFont(defaultArticleState.fontFamilyOption);
+		setSelectedFontSize(defaultArticleState.fontSizeOption);
+		setSelectedFontColor(defaultArticleState.fontColor);
+		setSelectedBackgroundColor(defaultArticleState.backgroundColor);
+		setSelectedContentWidth(defaultArticleState.contentWidth);
+	};
+
 	return (
 		<>
 			<ArrowButton isOpen={isSidebarOpen} onClick={toggleSidebar} />
@@ -51,7 +77,7 @@ export const ArticleParamsForm = ({
 				className={`${styles.container} ${
 					isOpen ? styles.container_open : ''
 				}`}>
-				<form className={styles.form}>
+				<form className={styles.form} onSubmit={onSubmit} onReset={onReset}>
 					<Select
 						title='Шрифт'
 						options={fontFamilyOptions}
