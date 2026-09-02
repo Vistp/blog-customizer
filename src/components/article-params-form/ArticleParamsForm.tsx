@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { useState, useRef, useEffect } from 'react';
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
@@ -11,48 +12,29 @@ import {
 	fontColors,
 	backgroundColors,
 	contentWidthArr,
+	ArticleStateType,
 } from 'src/constants/articleProps';
 import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 
 interface ArticleParamsFormProps {
-	onApply: (state: typeof defaultArticleState) => void;
+	onApply: (state: ArticleStateType) => void;
 }
 
 export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
-	const [isOpen, setIsOpen] = useState(false);
-	const [selectedFont, setSelectedFont] = useState(
-		defaultArticleState.fontFamilyOption
-	);
-	const [selectedFontSize, setSelectedFontSize] = useState(
-		defaultArticleState.fontSizeOption
-	);
-	const [selectedFontColor, setSelectedFontColor] = useState(
-		defaultArticleState.fontColor
-	);
-	const [selectedBackgroundColor, setSelectedBackgroundColor] = useState(
-		defaultArticleState.backgroundColor
-	);
-	const [selectedContentWidth, setSelectedContentWidth] = useState(
-		defaultArticleState.contentWidth
-	);
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+	const [formData, setFormData] = useState(defaultArticleState);
 
 	const rootRef = useRef<HTMLDivElement>(null);
 
 	const toggleSidebar = () => {
-		setIsOpen(!isOpen);
+		setIsSidebarOpen(!isSidebarOpen);
 	};
 
 	const onSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 
-		onApply({
-			fontFamilyOption: selectedFont,
-			fontSizeOption: selectedFontSize,
-			fontColor: selectedFontColor,
-			backgroundColor: selectedBackgroundColor,
-			contentWidth: selectedContentWidth,
-		});
+		onApply(formData);
 	};
 
 	const onReset = (e: React.FormEvent) => {
@@ -60,19 +42,15 @@ export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 
 		onApply(defaultArticleState);
 
-		setSelectedFont(defaultArticleState.fontFamilyOption);
-		setSelectedFontSize(defaultArticleState.fontSizeOption);
-		setSelectedFontColor(defaultArticleState.fontColor);
-		setSelectedBackgroundColor(defaultArticleState.backgroundColor);
-		setSelectedContentWidth(defaultArticleState.contentWidth);
+		setFormData(defaultArticleState);
 	};
 
 	useEffect(() => {
-		if (!isOpen) return;
+		if (!isSidebarOpen) return;
 
 		const onClickOutside = (event: MouseEvent) => {
 			if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
-				setIsOpen(false);
+				setIsSidebarOpen(false);
 			}
 		};
 
@@ -80,47 +58,56 @@ export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 		return () => {
 			document.removeEventListener('mousedown', onClickOutside);
 		};
-	}, [isOpen]);
+	}, [isSidebarOpen]);
 
 	return (
 		<div ref={rootRef}>
-			<ArrowButton isOpen={isOpen} onClick={toggleSidebar} />
+			<ArrowButton isOpen={isSidebarOpen} onClick={toggleSidebar} />
 			<aside
-				className={`${styles.container} ${
-					isOpen ? styles.container_open : ''
-				}`}>
+				className={clsx(
+					styles.container,
+					isSidebarOpen && styles.container_open
+				)}>
 				<form className={styles.form} onSubmit={onSubmit} onReset={onReset}>
 					<Select
 						title='Шрифт'
 						options={fontFamilyOptions}
-						selected={selectedFont}
-						onChange={setSelectedFont}
+						selected={formData.fontFamilyOption}
+						onChange={(value) =>
+							setFormData({ ...formData, fontFamilyOption: value })
+						}
 					/>
 					<RadioGroup
 						name='fontSize'
 						title='Размер шрифта'
 						options={fontSizeOptions}
-						selected={selectedFontSize}
-						onChange={setSelectedFontSize}
+						selected={formData.fontSizeOption}
+						onChange={(value) =>
+							setFormData({ ...formData, fontSizeOption: value })
+						}
 					/>
 					<Select
 						title='Цвет шрифта'
 						options={fontColors}
-						selected={selectedFontColor}
-						onChange={setSelectedFontColor}
+						selected={formData.fontColor}
+						onChange={(value) => setFormData({ ...formData, fontColor: value })}
 					/>
 					<Separator />
 					<Select
 						title='Цвет фона'
 						options={backgroundColors}
-						selected={selectedBackgroundColor}
-						onChange={setSelectedBackgroundColor}
+						selected={formData.backgroundColor}
+						onChange={(value) =>
+							setFormData({ ...formData, backgroundColor: value })
+						}
 					/>
 					<Select
 						title='Ширина контента'
 						options={contentWidthArr}
-						selected={selectedContentWidth}
-						onChange={setSelectedContentWidth}
+						selected={formData.contentWidth}
+						onChange={(value) =>
+							setFormData({ ...formData, contentWidth: value })
+						}
 					/>
 					<div className={styles.bottomContainer}>
 						<Button title='Сбросить' htmlType='reset' type='clear' />
